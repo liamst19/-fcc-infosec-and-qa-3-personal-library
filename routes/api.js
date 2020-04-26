@@ -129,6 +129,44 @@ module.exports = function (app) {
       var bookid = req.params.id;
       var comment = req.body.comment;
       //json res format same as .get
+      if(!bookid) return res.status(400).send('no book id')
+      else if(!comment) return res.status(400).send('invalid comment')
+    
+      const newComment = new Comment({ bookid, comment })
+      newComment.save((err, addedComment) => {
+        if(err){
+          console.log(`error POST /api/books/${bookid}`, err)
+          return res.status(500)
+        } else{
+          Book.findById(bookid, (err, book) => {
+            if(err){
+              console.log('error retrieving book', err);
+              return res.status(500)
+            } else {
+              Book.findByIdAndUpdate(
+                bookid, 
+                {...book, 
+                 commentcount: book.commentcount + 1,
+                 comments:     book.comments.concat(addedComment._id)
+                },
+                { new: true }
+                , (err, updBook) => {
+                  if(err){
+                    console.log('error updating book for comments', err)
+                    res.status(500)
+                  } else {
+                    return res.json({ 
+                      _id: updBook._id, 
+                      title: updBook.title, 
+                      commentcount: updBook.commentcount 
+                    })
+                  }
+                }
+              )
+            }
+          });
+        }
+      })
     })
     
     .delete(function(req, res){
