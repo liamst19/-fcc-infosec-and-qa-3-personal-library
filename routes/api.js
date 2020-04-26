@@ -24,8 +24,7 @@ const bookSchema = new Schema({
 })
 const commentSchema = new Schema({
   bookid:  { type: Schema.Types.ObjectId, ref: 'Book' },
-  comment: { type: String },
-  date:    { type: Date }
+  comment: { type: String }
 })
 const Book = mongoose.model('Book', bookSchema);
 const Comment = mongoose.model('Comment', commentSchema);
@@ -108,7 +107,22 @@ module.exports = function (app) {
       var bookid = req.params.id;
       if(!bookid) return res.status(400).send('no book id')
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
-      Comment.find({ bookid }).select('bookid comment').
+      Book
+        .findById(bookid)
+        .select('title comments')
+        .populate({ path: 'comments' })
+        .exec((err, book) => {
+          if(err){
+            console.log(`error GET /api/books/${bookid}`, err);
+            return res.status(500)
+          } else {
+            return res.json({
+              _id: book._id,
+              title: book.title,
+              comments: book.comments.map(c => c.comment)
+            })
+          }
+        })
     })
     
     .post(function(req, res){
