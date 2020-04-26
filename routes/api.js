@@ -8,14 +8,26 @@
 
 'use strict';
 
-var expect = require('chai').expect;
-var MongoClient = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectId;
-const MONGODB_CONNECTION_STRING = process.env.DB;
+var expect       = require('chai').expect;
+var MongoClient  = require('mongodb').MongoClient;
+var ObjectId     = require('mongodb').ObjectId;
+var mongoose     = require('mongoose')
+//const MONGODB_CONNECTION_STRING = process.env.DB;
 //Example connection: MongoClient.connect(MONGODB_CONNECTION_STRING, function(err, db) {});
+
+const Schema = mongoose.Schema;
+const bookSchema = new Schema({
+  title: { type: String, required: true },
+  commentcount: { type: Number },
+  comments: [{ type: String }]
+})
 
 module.exports = function (app) {
 
+  /** this project needs a db !! **/
+  mongoose.set("useFindAndModify", false);
+  mongoose.connect(process.env.DB);
+  
   app.route('/api/books')
     .get(function (req, res){
       //response will be array of book objects
