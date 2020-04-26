@@ -11,16 +11,24 @@
 var expect       = require('chai').expect;
 var MongoClient  = require('mongodb').MongoClient;
 var ObjectId     = require('mongodb').ObjectId;
-var mongoose     = require('mongoose')
 //const MONGODB_CONNECTION_STRING = process.env.DB;
 //Example connection: MongoClient.connect(MONGODB_CONNECTION_STRING, function(err, db) {});
 
+// Mongoose
+var mongoose     = require('mongoose')
 const Schema = mongoose.Schema;
 const bookSchema = new Schema({
-  title: { type: String, required: true },
-  commentcount: { type: Number },
-  comments: [{ type: String }]
+  title:         { type: String, required: true },
+  commentcount:  { type: Number },
+  comments:     [{ type: Schema.Types.ObjectId, ref: 'Comment' }]
 })
+const commentSchema = new Schema({
+  bookId:  { type: Schema.Types.ObjectId, ref: 'Book' },
+  comment: { type: String },
+  date:    { type: Date }
+})
+const Book = mongoose.model('Book', bookSchema);
+const Comment = mongoose.model('Comment', commentSchema);
 
 module.exports = function (app) {
 
@@ -32,11 +40,25 @@ module.exports = function (app) {
     .get(function (req, res){
       //response will be array of book objects
       //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
+      Book
+        .find()
+        .select('title commentcount')
+        .exec((err, books) => {
+        if(err){
+          console.log("Error: GET /api/books", err)
+          return res.status(500)
+        } else {
+          return res.json(books)
+        }
+      })
     })
     
     .post(function (req, res){
       var title = req.body.title;
       //response will contain new book object including atleast _id and title
+      if(!title){
+        return res.status()
+      }
     })
     
     .delete(function(req, res){
