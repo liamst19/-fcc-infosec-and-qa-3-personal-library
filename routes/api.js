@@ -23,7 +23,7 @@ const bookSchema = new Schema({
   comments:     [{ type: Schema.Types.ObjectId, ref: 'Comment' }]
 })
 const commentSchema = new Schema({
-  bookId:  { type: Schema.Types.ObjectId, ref: 'Book' },
+  bookid:  { type: Schema.Types.ObjectId, ref: 'Book' },
   comment: { type: String },
   date:    { type: Date }
 })
@@ -73,17 +73,29 @@ module.exports = function (app) {
     
     .delete(function(req, res){
       //if successful response will be 'complete delete successful'
-      const bookId = req.params.id
-      if(!bookId) return res.status(400).send('no id');
+      const bookid = req.params.id
+      if(!bookid) return res.status(400).send('no id');
         
-      Book.findOneAndDelete(bookId, (err) => {
+      // Delete Book
+      /* Note:
+          I don't like how this looks, as it appears that, when
+          a book was successfully deleted and there was problem
+          while trying to remove comments for the book and no
+          comment was removed, they would be left hanging without 
+          reference. Perhaps there is another way to do this, so
+          that change is committed after every change is processed
+          successfully.
+      */
+      Book.findOneAndDelete(bookid, (err) => {
         if(err){
-          console.log("Error: GET /api/books", err)
+          console.log("Error: DELETE /api/books findOneAndDelete", err)
           return res.status(500)
         } else {
-          Comment.deleteMany({ bookId }, (err) => {
+          // Delete Comments
+          Comment.deleteMany({ bookid }, (err) => {
             if(err){
-              
+              console.log("Error: DELETE /api/books deleteMany", err)
+              return res.status(500)
             }
             else return res.status(200).send('complete delete successful')
           })
@@ -91,12 +103,12 @@ module.exports = function (app) {
       })
     });
 
-
-
   app.route('/api/books/:id')
     .get(function (req, res){
       var bookid = req.params.id;
+      if(!bookid) return res.status(400).send('no book id')
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+      Comment.find({ bookid }).select('bookid comment').
     })
     
     .post(function(req, res){
