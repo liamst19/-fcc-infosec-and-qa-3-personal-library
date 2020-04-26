@@ -19,7 +19,7 @@ var mongoose     = require('mongoose')
 const Schema = mongoose.Schema;
 const bookSchema = new Schema({
   title:         { type: String, required: true },
-  commentcount:  { type: Number },
+  commentcount:  { type: Number, default: 0 },
   comments:     [{ type: Schema.Types.ObjectId, ref: 'Comment' }]
 })
 const commentSchema = new Schema({
@@ -117,8 +117,8 @@ module.exports = function (app) {
             return res.status(500)
           } else {
             return res.json({
-              _id: book._id,
-              title: book.title,
+              _id:      book._id,
+              title:    book.title,
               comments: book.comments.map(c => c.comment)
             })
           }
@@ -156,9 +156,9 @@ module.exports = function (app) {
                     res.status(500)
                   } else {
                     return res.json({ 
-                      _id: updBook._id, 
-                      title: updBook.title, 
-                      commentcount: updBook.commentcount 
+                      _id:           updBook._id, 
+                      title:         updBook.title, 
+                      commentcount:  updBook.commentcount 
                     })
                   }
                 }
@@ -171,7 +171,16 @@ module.exports = function (app) {
     
     .delete(function(req, res){
       var bookid = req.params.id;
+      if(!bookid) return res.status(400).send('no book id')
       //if successful response will be 'delete successful'
+      Comment.deleteMany({ bookid }, (err) => {
+        if(err){
+          console.log('Error deleting comments', err)
+          return res.status(500)
+        } else {
+          return res.status(200).send('delete successful')
+        }
+      })
     });
   
 };

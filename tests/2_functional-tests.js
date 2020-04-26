@@ -23,6 +23,7 @@ suite('Functional Tests', function() {
      chai.request(server)
       .get('/api/books')
       .end(function(err, res){
+       console.log(res.body);
         assert.equal(res.status, 200);
         assert.isArray(res.body, 'response should be an array');
         assert.property(res.body[0], 'commentcount', 'Books in array should contain commentcount');
@@ -41,7 +42,16 @@ suite('Functional Tests', function() {
     suite('POST /api/books with title => create book object/expect book object', function() {
       
       test('Test POST /api/books with title', function(done) {
-        //done();
+       chai.request(server)
+        .post('/api/books')
+        .send({
+           title: 'Test Book Title'
+         })
+        .end((err, res) => {
+           assert.equal(res.status, 200);
+           assert.equal(res.body.title, 'Test Book Title')
+           done();
+         })
       });
       
       test('Test POST /api/books with no title given', function(done) {
