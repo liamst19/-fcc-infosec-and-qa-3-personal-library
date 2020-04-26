@@ -57,12 +57,38 @@ module.exports = function (app) {
       var title = req.body.title;
       //response will contain new book object including atleast _id and title
       if(!title){
-        return res.status()
+        return res.status(400).send('no title')
       }
+      const book = new Book({ title });
+      book.save((err, savedBook) => {
+        if(err){
+          console.log("Error: GET /api/books", err)
+          return res.status(500)
+        } else {
+          return res.json({ _id: savedBook._id, title});
+        }
+      })
+      
     })
     
     .delete(function(req, res){
       //if successful response will be 'complete delete successful'
+      const bookId = req.params.id
+      if(!bookId) return res.status(400).send('no id');
+        
+      Book.findOneAndDelete(bookId, (err) => {
+        if(err){
+          console.log("Error: GET /api/books", err)
+          return res.status(500)
+        } else {
+          Comment.deleteMany({ bookId }, (err) => {
+            if(err){
+              
+            }
+            else return res.status(200).send('complete delete successful')
+          })
+        }        
+      })
     });
 
 
