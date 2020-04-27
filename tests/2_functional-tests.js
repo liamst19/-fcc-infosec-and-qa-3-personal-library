@@ -97,10 +97,10 @@ suite('Functional Tests', function() {
       
       test('Test GET /api/books/[id] with valid id in db',  function(done){
        chai.request(server)
-        .get('/api/books/5ea63029b5b90203e94b458a')
+        .get('/api/books/5ea63b50ae482a2fcc9f50f9')
         .end(function(err, res){
           assert.equal(res.status, 200);
-          assert.equal(res.body.title, 'Id Test Book Title')
+          assert.equal(res.body.title, 'Test GET /api/books/[id] with valid id in db')
           done();
         });      
       });
@@ -112,15 +112,15 @@ suite('Functional Tests', function() {
       
       test('Test POST /api/books/[id] with comment', function(done){
        chai.request(server)
-        .post('/api/books/5ea63029b5b90203e94b458a')
+        .post('/api/books/5ea63b50ae482a2fcc9f50f9')
         .send({
            comment: 'test comment'
          })
         .end((err, res) => {
            console.log('POST comment: response', {status: res.status})
            assert.equal(res.status, 200);
-           assert.equal(res.body._id, '5ea63029b5b90203e94b458a')
-           assert.equal(res.body.title, 'Id Test Book Title')
+           assert.equal(res.body._id, '5ea63b50ae482a2fcc9f50f9')
+           assert.equal(res.body.title, 'Test GET /api/books/[id] with valid id in db')
            done();
          })
       });
