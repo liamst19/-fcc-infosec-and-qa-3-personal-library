@@ -88,7 +88,7 @@ suite('Functional Tests', function() {
       
       test('Test GET /api/books/[id] with id not in db',  function(done){
        chai.request(server)
-        .get('/api/books/invalidid')
+        .get('/api/books/5ea63029b5b90203e04b458a')
         .end(function(err, res){
           assert.equal(res.status, 400);
           done();
@@ -99,7 +99,6 @@ suite('Functional Tests', function() {
        chai.request(server)
         .get('/api/books/5ea63029b5b90203e94b458a')
         .end(function(err, res){
-         console.log('response', {status: res.status, body: res.body})
           assert.equal(res.status, 200);
           assert.equal(res.body.title, 'Id Test Book Title')
           done();
@@ -118,6 +117,7 @@ suite('Functional Tests', function() {
            comment: 'test comment'
          })
         .end((err, res) => {
+           console.log('POST comment: response', {status: res.status})
            assert.equal(res.status, 200);
            assert.equal(res.body._id, '5ea63029b5b90203e94b458a')
            assert.equal(res.body.title, 'Id Test Book Title')

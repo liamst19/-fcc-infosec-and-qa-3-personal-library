@@ -30,7 +30,7 @@ const Book = mongoose.model('Book', bookSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 
 const checkId = str => {
-  return /^#[0-9A-F]{24}$/i.test(str)
+  return /^[0-9A-F]{24}$/i.test(str)
 }
 
 module.exports = function (app) {
@@ -122,12 +122,14 @@ module.exports = function (app) {
           if(err){
             console.log(`error GET /api/books/${bookid}`, err);
             return res.status(500)
-          } else {
+          } else if(book) {
             return res.json({
               _id:      book._id,
               title:    book.title,
               comments: book.comments.map(c => c.comment)
             })
+          } else {
+            return res.status(400).send('no book found for id')
           }
         })
     })
@@ -142,6 +144,7 @@ module.exports = function (app) {
     
       const newComment = new Comment({ bookid, comment })
       newComment.save((err, addedComment) => {
+        console.log('comment saved?')
         if(err){
           console.log(`error POST /api/books/${bookid}`, err)
           return res.status(500)
@@ -151,6 +154,12 @@ module.exports = function (app) {
               console.log('error retrieving book', err);
               return res.status(500)
             } else {
+              
+              console.log('book found')
+              const bookToUpdate = {
+                ...book,
+                
+              }
               Book.findByIdAndUpdate(
                 bookid, 
                 {...book, 
@@ -159,6 +168,8 @@ module.exports = function (app) {
                 },
                 { new: true }
                 , (err, updBook) => {
+                  
+                  console.log('book saved?')
                   if(err){
                     console.log('error updating book for comments', err)
                     res.status(500)
