@@ -29,6 +29,10 @@ const commentSchema = new Schema({
 const Book = mongoose.model('Book', bookSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 
+const checkId = str => {
+  return /^#[0-9A-F]{6}$/i.test(str)
+}
+
 module.exports = function (app) {
 
   /** this project needs a db !! **/
@@ -106,6 +110,7 @@ module.exports = function (app) {
     .get(function (req, res){
       var bookid = req.params.id;
       if(!bookid) return res.status(400).send('no book id')
+      else if()
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
       Book
         .findById(bookid)
