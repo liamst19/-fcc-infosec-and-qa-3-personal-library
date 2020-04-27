@@ -30,7 +30,7 @@ const Book = mongoose.model('Book', bookSchema);
 const Comment = mongoose.model('Comment', commentSchema);
 
 const checkId = str => {
-  return /^#[0-9A-F]{6}$/i.test(str)
+  return /^#[0-9A-F]{24}$/i.test(str)
 }
 
 module.exports = function (app) {
@@ -109,8 +109,10 @@ module.exports = function (app) {
   app.route('/api/books/:id')
     .get(function (req, res){
       var bookid = req.params.id;
+      console.log('/api/books/:id', bookid)
       if(!bookid) return res.status(400).send('no book id')
-      else if()
+      else if(!checkId(bookid)) return res.status(400).send('invalid book id')
+    
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
       Book
         .findById(bookid)
@@ -135,6 +137,7 @@ module.exports = function (app) {
       var comment = req.body.comment;
       //json res format same as .get
       if(!bookid) return res.status(400).send('no book id')
+      else if(!checkId(bookid)) return res.status(400).send('invalid book id')
       else if(!comment) return res.status(400).send('invalid comment')
     
       const newComment = new Comment({ bookid, comment })
@@ -177,6 +180,8 @@ module.exports = function (app) {
     .delete(function(req, res){
       var bookid = req.params.id;
       if(!bookid) return res.status(400).send('no book id')
+      else if(!checkId(bookid)) return res.status(400).send('invalid book id')
+    
       //if successful response will be 'delete successful'
       Comment.deleteMany({ bookid }, (err) => {
         if(err){

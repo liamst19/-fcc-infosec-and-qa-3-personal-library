@@ -99,6 +99,7 @@ suite('Functional Tests', function() {
        chai.request(server)
         .get('/api/books/5ea63029b5b90203e94b458a')
         .end(function(err, res){
+         console.log('response', {status: res.status, body: res.body})
           assert.equal(res.status, 200);
           assert.equal(res.body.title, 'Id Test Book Title')
           done();
