@@ -76,31 +76,18 @@ module.exports = function (app) {
     
     .delete(function(req, res){
       //if successful response will be 'complete delete successful'
-      const bookid = req.params.id
-      if(!bookid) return res.status(400).send('no id');
-        
-      // Delete Book
-      /* Note:
-          I don't like how this looks, as it appears that, when
-          a book was successfully deleted and there was problem
-          while trying to remove comments for the book and no
-          comment was removed, they would be left hanging without 
-          reference. Perhaps there is another way to do this, so
-          that change is committed after every change is processed
-          successfully.
-      */
-      Book.findOneAndDelete(bookid, (err) => {
+      Book.deleteMany((err) => {
         if(err){
-          console.log("Error: DELETE /api/books findOneAndDelete", err)
+          console.log("Error: DELETE /api/books", err)
           return res.status(500)
         } else {
-          // Delete Comments
-          Comment.deleteMany({ bookid }, (err) => {
+          Comment.deleteMany((err) => {
             if(err){
-              console.log("Error: DELETE /api/books deleteMany", err)
+              console.log("Error: DELETE /api/books", err)
               return res.status(500)
-            }
-            else return res.status(200).send('complete delete successful')
+            } else {
+              return res.status(200).send('complete delete successful');
+            }            
           })
         }        
       })
@@ -109,7 +96,6 @@ module.exports = function (app) {
   app.route('/api/books/:id')
     .get(function (req, res){
       var bookid = req.params.id;
-      console.log('/api/books/:id', bookid)
       if(!bookid) return res.status(400).send('no book id')
       else if(!checkId(bookid)) return res.status(400).send('invalid book id')
     
@@ -144,7 +130,6 @@ module.exports = function (app) {
     
       const newComment = new Comment({ bookid, comment })
       newComment.save((err, addedComment) => {
-        console.log('comment saved?')
         if(err){
           console.log(`error POST /api/books/${bookid}`, err)
           return res.status(500)
@@ -155,21 +140,15 @@ module.exports = function (app) {
               return res.status(500)
             } else {
               
-              console.log('book found')
               const bookToUpdate = {
-                ...book,
-                
+                 commentcount: book.commentcount + 1,
+                 comments:     book.comments.concat(addedComment._id)                
               }
               Book.findByIdAndUpdate(
                 bookid, 
-                {...book, 
-                 commentcount: book.commentcount + 1,
-                 comments:     book.comments.concat(addedComment._id)
-                },
+                bookToUpdate,
                 { new: true }
-                , (err, updBook) => {
-                  
-                  console.log('book saved?')
+                , (err, updBook) => {                  
                   if(err){
                     console.log('error updating book for comments', err)
                     res.status(500)
@@ -192,15 +171,31 @@ module.exports = function (app) {
       var bookid = req.params.id;
       if(!bookid) return res.status(400).send('no book id')
       else if(!checkId(bookid)) return res.status(400).send('invalid book id')
-    
-      //if successful response will be 'delete successful'
-      Comment.deleteMany({ bookid }, (err) => {
+        
+      // Delete Book
+      /* Note:
+          I don't like how this looks, as it appears that, when
+          a book was successfully deleted and there was problem
+          while trying to remove comments for the book and no
+          comment was removed, they would be left hanging without 
+          reference. Perhaps there is another way to do this, so
+          that change is committed after every change is processed
+          successfully.
+      */
+      Book.findByIdAndDelete(bookid, (err) => {
         if(err){
-          console.log('Error deleting comments', err)
+          console.log("Error: DELETE /api/books Book.findByIdAndDelete", err)
           return res.status(500)
         } else {
-          return res.status(200).send('delete successful')
-        }
+          // Delete Comments
+          Comment.deleteMany({ bookid }, (err) => {
+            if(err){
+              console.log("Error: DELETE /api/books Comment.deleteMany", err)
+              return res.status(500)
+            }
+            else return res.status(200).send('complete delete successful')
+          })
+        }        
       })
     });
   
